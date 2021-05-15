@@ -1,6 +1,7 @@
 import fs from 'fs';
-import { getVerifyCredential } from './api';
-
+import { getVerifyCredential, limitSellOrder, loadBalances, marketBuyOrder, stopLossLimitSellOrder } from './api';
+import path from 'path';
+const assets = path.join(window.applicationPath, '../assets/');
 export const getSaveCredential = (apiKey, secretKey) => {
   return new Promise((resolve, reject) => {
     const credential = {
@@ -8,7 +9,7 @@ export const getSaveCredential = (apiKey, secretKey) => {
       "secretKey": secretKey
     };
     const data = JSON.stringify(credential);
-    fs.writeFile('credential.json', data, (err) => {
+    fs.writeFile(`${assets}credential.json`, data, (err) => {
       if (err){
         reject(err);
         return;
@@ -16,20 +17,19 @@ export const getSaveCredential = (apiKey, secretKey) => {
       resolve(true);
     })
   })
-
 };
 
 
 export const getCredential = () => {
+  console.log(assets);
   return new Promise((resolve, reject) => {
-    fs.readFile('credential.json', function(err, data) {
+    fs.readFile(`${assets}credential.json`, function(err, data) {
       if (err) {
         reject(err);
         return;
       }
       try {
         const credential = JSON.parse(data);
-        console.log(credential);
         resolve(credential);
       }catch(ex){
         reject(ex);
@@ -50,11 +50,50 @@ export const checkCredential = async () => {
 
 export const getCurrent = () => {
   const currentDate = new Date();
-  const timestamp = currentDate.getTime();
-  const date = new Date(timestamp);
-  const hours = date.getHours();
-  const minutes = "0" + date.getMinutes();
-  const seconds = "0" + date.getSeconds();
+  // const timestamp = currentDate.getTime();
+  // const date = new Date(timestamp);
+  // const hours = date.getHours();
+  // const minutes = "0" + date.getMinutes();
+  // const seconds = "0" + date.getSeconds();
+  //
+  // return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+  return `[${currentDate.getTime()}]`;
+};
 
-  return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+export const getBalances = async () => {
+  const credential = await getCredential();
+  return await loadBalances(credential.apiKey, credential.secretKey);
+};
+
+
+export const buyOrder = async (p) => {
+  const params = p;
+  const credential = await getCredential();
+  params.apiKey = credential.apiKey;
+  params.secretKey = credential.secretKey;
+
+  return await marketBuyOrder(params)
+};
+
+
+export const sendOrder1 = async (p) => {
+  const params = p;
+  const credential = await getCredential();
+  params.apiKey = credential.apiKey;
+  params.secretKey = credential.secretKey;
+
+  return await limitSellOrder(params)
+};
+
+export const sendOrder2 = async (p) => {
+  const params = p;
+  const credential = await getCredential();
+  params.apiKey = credential.apiKey;
+  params.secretKey = credential.secretKey;
+
+  return await stopLossLimitSellOrder(params)
+};
+
+export const convert = (c) => {
+  return c.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0];
 };

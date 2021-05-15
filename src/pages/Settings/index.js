@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import styles from './index.css';
+import React from 'react';
+import '../../App.global.css';
 import Div from '../../components/Div';
 import { Link } from 'react-router-dom';
 import { getVerifyCredential } from '../../services/api';
@@ -20,22 +20,23 @@ const Settings = () => {
     })
   }, []);
 
-
   const updateApiKey = (value) => {
     setApiKey(value);
   };
   const updateSecretKey = (value) => {
     setSecretKey(value);
   };
-
   const verifyCredential = async () => {
+
+    console.log('Verifying...')
+
     if (!apiKey || !secretKey){
       console.log('api and secret key is null value');
       return;
     }
-    console.log(apiKey, secretKey);
-
     const verifyResult = await getVerifyCredential(apiKey, secretKey);
+
+    console.log('-------------------------', verifyResult);
 
     if (verifyResult.data === false){
       setVerified(false);
@@ -54,21 +55,20 @@ const Settings = () => {
 
   return (
     <>
-      <Div className={styles.layer} style={{marginTop: 30}}>
-        <Div className={styles.layerTitle} children='Binance API Information:'/>
-
+      <Div className={'layer'} style={{marginTop: 30}}>
+        <Div className={'layerTitle'} children='Binance API Information:'/>
         <Div style={{flexDirection: 'column'}}>
           <Div style={{flexDirection: 'row'}}>
             <Div style={{width: '20%', justifyContent: 'flex-end', paddingRight: 10}}>API Key: </Div>
             <Div style={{width: '80%'}}>
-              <input type='password' style={{width: '100%'}} value={apiKey} onChange={event => updateApiKey(event.target.value)}/>
+              <input type='text' style={{width: '100%'}} value={apiKey} onChange={event => updateApiKey(event.target.value)}/>
             </Div>
           </Div>
 
           <Div style={{flexDirection: 'row', marginTop: 10}}>
             <Div style={{width: '20%', justifyContent: 'flex-end', paddingRight: 10}}>API Secret: </Div>
             <Div style={{width: '80%'}}>
-              <input type='password' style={{width: '100%'}} value={secretKey} onChange={event => updateSecretKey(event.target.value)}/>
+              <input type='text' style={{width: '100%'}} value={secretKey} onChange={event => updateSecretKey(event.target.value)}/>
             </Div>
           </Div>
 
@@ -94,7 +94,7 @@ const Settings = () => {
         </Div>
       </Div>
 
-      <Div className={styles.funcLayer}>
+      <Div className={'funcLayer'}>
         <button style={{marginRight: 10}} onClick={saveCredential}>
           <Link to={{pathname: '/'}}>Save</Link>
         </button>

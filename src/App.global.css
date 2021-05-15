@@ -63,3 +63,44 @@ a:hover {
   align-items: center;
   margin: 20px 0;
 }*/
+.layer {
+  flex-direction: column;
+  border: 1px solid lightgrey;
+  padding: 10px;
+  margin: 15px;
+}
+
+.layerTitle {
+  position: relative;
+  top: -20px;
+  width: fit-content;
+  background: white;
+}
+
+.subLayer {
+  flex-direction: column;
+  border: 1px solid lightgrey;
+  padding: 10px;
+  margin: 10px;
+  width: 50%;
+}
+
+.funcLayer {
+  flex-direction: row;
+  justify-content: flex-end;
+  border: 0px solid lightgrey;
+  margin-right: 15px;
+}
+.loggingArea {
+  border: 1px solid grey;
+  height: 180px;
+  padding: 10px;
+}
+
+.label {
+  margin-right: 10px;
+}
+.inputSize {
+  width: 100px;
+  margin-top: -3px;
+}

@@ -26,7 +26,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const app_express = express();
 const port = 3000;
-const httpServer = http.createServer(app_express)
+const httpServer = http.createServer(app_express);
 
 export default class AppUpdater {
   constructor() {
@@ -75,37 +75,42 @@ const createWindow = async () => {
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../assets');
 
+  const PRELOAD_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets/preload.js')
+    : path.join(__dirname, '../assets');
+
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-
   app_express.use(cors());
   app_express.use(bodyParser.json());
   app_express.use(bodyParser.urlencoded({extended:true}));
-
-  // app_express.use('/', function(req: any, res: any) {
-  //   console.log(req, res);
-  //   res.send('hello world');
-  // });
-
+  app_express.use('/loadBalances', api.verifyAccount);
   app_express.use('/verify', api.verifyAccount);
+  app_express.use('/marketBuyOrder', api.marketBuyOrder);
+  app_express.use('/limitSellOrder', api.limitSellOrder);
+  app_express.use('/stopLossLimitSellOrder', api.stopLossLimitSellOrder);
+
+  app_express.use('/', express.static(path.join(app.getAppPath(), 'assets')));
 
   httpServer.listen(port, () => {
-
-    console.log(`Example app listening at http://localhost:${port}`);
-
+    console.log(`http://localhost:${port}`);
     mainWindow = new BrowserWindow({
       show: false,
-      width: 1024,
-      height: 828,
+      width: 780,
+      height: 835,
       icon: getAssetPath('icon.png'),
       webPreferences: {
-        nodeIntegration: true
-      }
+        nodeIntegration: true,
+        preload: PRELOAD_PATH
+      },
+      resizable: false
     });
-
-    mainWindow.loadURL(`file://${__dirname}/index.html`);
+    mainWindow.removeMenu();
+    mainWindow.loadURL(`file://${__dirname}/index.html`).catch((error) => {
+      console.log('error', error);
+    });
 
     // @TODO: Use 'ready-to-show' event
     //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
@@ -128,6 +133,8 @@ const createWindow = async () => {
 
     const menuBuilder = new MenuBuilder(mainWindow);
     menuBuilder.buildMenu();
+
+    mainWindow.webContents.openDevTools();
 
     // Open urls in the user's browser
     mainWindow.webContents.on('new-window', (event, url) => {
