@@ -36,12 +36,12 @@ const Settings = () => {
     }
     const verifyResult = await getVerifyCredential(apiKey, secretKey);
 
-    console.log('-------------------------', verifyResult);
+    console.log('verifying result: ', verifyResult);
 
-    if (verifyResult.data === false){
-      setVerified(false);
-    }else {
+    if (verifyResult.data.updateTime){
       setVerified(true);
+    }else {
+      setVerified(false);
     }
   };
 

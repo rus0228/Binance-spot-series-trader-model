@@ -93,7 +93,7 @@ a:hover {
 }
 .loggingArea {
   border: 1px solid grey;
-  height: 180px;
+  height: 120px;
   padding: 10px;
 }
 
@@ -101,6 +101,6 @@ a:hover {
   margin-right: 10px;
 }
 .inputSize {
-  width: 100px;
+  width: 80px;
   margin-top: -3px;
 }

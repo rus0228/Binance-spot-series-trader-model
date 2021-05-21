@@ -77,7 +77,7 @@ const createWindow = async () => {
 
   const PRELOAD_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets/preload.js')
-    : path.join(__dirname, '../assets');
+    : path.join(__dirname, '../assets/preload.js');
 
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
@@ -98,8 +98,8 @@ const createWindow = async () => {
     console.log(`http://localhost:${port}`);
     mainWindow = new BrowserWindow({
       show: false,
-      width: 780,
-      height: 835,
+      width: 705,
+      height: 820,
       icon: getAssetPath('icon.png'),
       webPreferences: {
         nodeIntegration: true,

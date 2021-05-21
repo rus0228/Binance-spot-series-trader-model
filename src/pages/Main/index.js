@@ -26,6 +26,10 @@ const Main = () => {
     setStopLossValue(e);
   };
   const updateProfit = (e) => {
+
+    const timestamp = new Date().getTime();
+    console.log('--------------------', timestamp);
+
     setProfit(e);
   };
   const updateProfit1 = (e) => {
@@ -63,6 +67,19 @@ const Main = () => {
   const updateReady = () => {
     setReady(!isReady);
   };
+
+  const updateLogs = (orders) => {
+    let logs = [];
+    orders.map(item => {
+      if (item.orderContent.data.orderId !== undefined){
+        logs.push(`${item.orderContent.data.transactTime} ${item.orderType} order placed successfully.`);
+      } else {
+        logs.push(`------------- ${item.orderType} order failed`);
+      }
+    });
+    setLog(logs);
+  }
+  
   const submitOrders = async (e) => {
     if (e.key === 'Enter'){
       if (!isReady){
@@ -78,29 +95,41 @@ const Main = () => {
         type: 'MARKET',
         quoteOrderQty: quoteOrderQty
       });
-      let filledAmount = 0;
-      buyResult.data.fills.map(item => {
-        filledAmount += parseFloat(item.qty);
-      });
 
       console.log(buyResult);
+
+      let filledAmount = 0;
+      let orders = [];
+
+      if (buyResult.data.fills.length > 0) {
+        buyResult.data.fills.map(item => {
+          filledAmount += parseFloat(item.qty);
+        });
+        orders.push({orderType: 'MARKET', orderContent: buyResult});
+      } else {
+        return;
+      }
 
       /**
        * Send sell_orders
        * */
+
       const limitPrice = quoteOrderQty * (1 + profit / 100) / filledAmount;
       const stopLossLimitPrice = quoteOrderQty * (1 - stopLossValue / 100) / filledAmount;
       const stopLossLimitStopPrice = quoteOrderQty * (1 - (parseFloat(stopLossValue) + 1) / 100) / filledAmount;
 
       if (!isSplitCut && !isStopLoss) {
-        const tpOrder = await sendOrder1({
+        const tpOrder0 = await sendOrder1({
           symbol: `${coin}${optionValue}`,
           side: 'SELL',
           type: 'LIMIT_MAKER',
           quantity: `${convert(filledAmount)}`,
           price: `${convert(limitPrice)}`
         });
-        console.log(tpOrder);
+        console.log(tpOrder0);
+        orders.push({orderType: 'LIMIT_MAKER', orderContent: tpOrder0});
+        updateLogs(orders);
+
       }
 
       if (!isSplitCut && isStopLoss){
@@ -112,6 +141,8 @@ const Main = () => {
           price: `${convert(limitPrice)}`
         });
         console.log(tpOrder);
+        orders.push({orderType: 'LIMIT_MAKER', orderContent: tpOrder});
+
         const slOrder = await sendOrder2({
           symbol: `${coin}${optionValue}`,
           side: 'SELL',
@@ -122,6 +153,8 @@ const Main = () => {
           stopPrice: `${convert(stopLossLimitStopPrice)}`
         });
         console.log(slOrder);
+        orders.push({orderType: 'STOP_LOSS_LIMIT', orderContent: slOrder});
+        updateLogs(orders);
       }
 
       if (isSplitCut && isStopLoss){
@@ -133,6 +166,7 @@ const Main = () => {
         const stopLossLimitStopPrice1 = quoteOrderQty1 * (1 - (parseFloat(stopLossValue) + 1) / 100) / quantity1;
         const stopLossLimitPrice2 = quoteOrderQty2 * (1 - stopLossValue / 100) / quantity2;
         const stopLossLimitStopPrice2 = quoteOrderQty2 * (1 - (parseFloat(stopLossValue) + 1) / 100) / quantity2;
+
         const tpOrder1 = await sendOrder1({
           symbol: `${coin}${optionValue}`,
           side: 'SELL',
@@ -141,15 +175,7 @@ const Main = () => {
           price: `${convert(limitPrice1)}`
         });
         console.log(tpOrder1);
-
-        const tpOrder2 = await sendOrder1({
-          symbol: `${coin}${optionValue}`,
-          side: 'SELL',
-          type: 'LIMIT_MAKER',
-          quantity: `${convert(quantity2)}`,
-          price: `${convert(limitPrice2)}`
-        });
-        console.log(tpOrder2);
+        orders.push({orderType: 'LIMIT_MAKER', orderContent: tpOrder1});
 
         const slOrder1 = await sendOrder2({
           symbol: `${coin}${optionValue}`,
@@ -161,6 +187,17 @@ const Main = () => {
           stopPrice: `${convert(stopLossLimitStopPrice1)}`
         });
         console.log(slOrder1);
+        orders.push({orderType: 'STOP_LOSS_LIMIT', orderContent: slOrder1});
+
+        const tpOrder2 = await sendOrder1({
+          symbol: `${coin}${optionValue}`,
+          side: 'SELL',
+          type: 'LIMIT_MAKER',
+          quantity: `${convert(quantity2)}`,
+          price: `${convert(limitPrice2)}`
+        });
+        console.log(tpOrder2);
+        orders.push({orderType: 'LIMIT_MAKER', orderContent: tpOrder2});
 
         const slOrder2 = await sendOrder2({
           symbol: `${coin}${optionValue}`,
@@ -172,6 +209,9 @@ const Main = () => {
           stopPrice: `${convert(stopLossLimitStopPrice2)}`
         });
         console.log(slOrder2);
+        orders.push({orderType: 'STOP_LOSS_LIMIT', orderContent: slOrder2});
+        
+        updateLogs(orders);
       }
     }
   };
@@ -287,11 +327,11 @@ const Main = () => {
 
       <Div className={'layer'}>
         <Div className={'layerTitle'} children='Log:'/>
-        <Div className={'loggingArea'}>
+        <Div className={'loggingArea'} style={{flexDirection: 'column'}}>
           {
             log.map(item => {
               return (
-                <div key={item}>{item}</div>
+                <Div key={item}>{item}</Div>
               )
             })
           }
